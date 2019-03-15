@@ -2,10 +2,10 @@
 
 node {
     stage('checkout') {
-        checkout scm
+       checkout scm
     }
 
-    docker.image('jhipster/jhipster:v5.8.2').inside('-u jhipster -e MAVEN_OPTS="-Duser.home=./"') {
+    docker.image('jhipster/jhipster:v5.3.1').inside('-u root -e MAVEN_OPTS="-Duser.home=./"') {
         stage('check java') {
             sh "java -version"
         }
@@ -16,7 +16,7 @@ node {
         }
 
         stage('install tools') {
-            sh "./mvnw com.github.eirslett:frontend-maven-plugin:install-node-and-npm -DnodeVersion=v10.15.0 -DnpmVersion=6.4.1"
+            sh "./mvnw com.github.eirslett:frontend-maven-plugin:install-node-and-npm -DnodeVersion=v8.11.4 -DnpmVersion=6.4.1"
         }
 
         stage('npm install') {
@@ -35,11 +35,11 @@ node {
 
         stage('frontend tests') {
             try {
-                sh "./mvnw com.github.eirslett:frontend-maven-plugin:npm -Dfrontend.npm.arguments='run test'"
+                sh "./mvnw com.github.eirslett:frontend-maven-plugin:npm -Dfrontend.npm.arguments='test -- -u'"
             } catch(err) {
                 throw err
             } finally {
-                junit '**/target/test-results/TESTS-*.xml'
+                junit '**/target/test-results/jest/TESTS-*.xml'
             }
         }
 
@@ -47,12 +47,17 @@ node {
             sh "./mvnw verify -Pprod -DskipTests"
             archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
         }
+        stage('quality analysis') {
+            withSonarQubeEnv('sonar') {
+                sh "./mvnw sonar:sonar"
+            }
+        }
     }
 
     def dockerImage
     stage('build docker') {
-        sh "cp -R src/main/docker target/"
-        sh "cp target/*.war target/docker/"
+        sh "sudo cp -R src/main/docker target/"
+        sh "sudo cp target/*.war target/docker/"
         dockerImage = docker.build('bnasslahsen/devops-repo', 'target/docker')
     }
 
