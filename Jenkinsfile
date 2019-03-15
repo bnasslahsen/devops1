@@ -47,11 +47,6 @@ node {
             sh "./mvnw verify -Pprod -DskipTests"
             archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
         }
-        stage('quality analysis') {
-            withSonarQubeEnv('sonar') {
-                sh "./mvnw sonar:sonar"
-            }
-        }
     }
 
     def dockerImage
