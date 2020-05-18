@@ -7,6 +7,8 @@ services:
             - SPRING_PROFILES_ACTIVE=prod,swagger
             - SPRING_DATASOURCE_URL=jdbc:mysql://devops1-mysql:3306/devops1?useUnicode=true&characterEncoding=utf8&useSSL=false
             - JHIPSTER_SLEEP=10 # gives time for the database to boot before the application
+            - JHIPSTER_LOGGING_LOGSTASH_ENABLED=true
+            - JHIPSTER_LOGGING_LOGSTASH_HOST=172.17.0.1
         ports:
             - 8081:8080
     devops1-mysql:
